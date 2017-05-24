@@ -6,7 +6,6 @@ from django.db import models
 # Create your models here.
 # id, dropoff, pickup, mechanic, repair_type
 class Service(models.Model):
-    id = models.IntegerField(primary_key=True)
     dropoff = models.CharField(max_length=100)
     pickup = models.CharField(max_length=100)
     mechanic = models.CharField(max_length=50)
