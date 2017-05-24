@@ -9,7 +9,12 @@
       <input type="submit" class="btn" value="import_csv" name="import" />
       <input type="submit" class="btn" value="export_csv" name="export" />
     </form> -->
-
+    {% for service in services %}
+    <p>{{ service.dropoff }}</p>
+    <p>{{ service.pickup }}</p>
+    <p>{{ service.mechanic }}</p>
+    <p>{{ service.repair_type }}</p>
+    {% endfor %}
     <form action='post_url/' method="post">
       {% csrf_token %}
       {{ form }}
