@@ -35,78 +35,41 @@ national_averages = {
     'F': 2.5
 }
 
-mechanics = {
-    'Bob': {
-        'A': [],
-        'B': [],
-        'C': [],
-        'D': [],
-        'E': [],
-        'F': []
-    },
-    'Rich': {
-        'A': [],
-        'B': [],
-        'C': [],
-        'D': [],
-        'E': [],
-        'F': []
-    },
-    'Larry': {
-        'A': [],
-        'B': [],
-        'C': [],
-        'D': [],
-        'E': [],
-        'F': []
-    },
-    'Simone': {
-        'A': [],
-        'B': [],
-        'C': [],
-        'D': [],
-        'E': [],
-        'F': []
-    },
-    'Peter': {
-        'A': [],
-        'B': [],
-        'C': [],
-        'D': [],
-        'E': [],
-        'F': []
-    }
-}
-
+mechanics = {}
 repair_data = []
 
 def get_import(request):
-    print 'get_import', request
     reader = csv.reader(open('repair-data.csv'), delimiter=b' ', quotechar=b'|')
     for row in reader:
         repair_data.append(', '.join(row))
-        # print(', '.join(row))
-    # print repair_data[1].split(',')[1]
-    # print repair_data[1].split(',')[2]
-
-    print '1', repair_data[1].split(',')[1]
-    print '2', repair_data[1].split(',')[2]
-    print '3', repair_data[1].split(',')[3]
-    print '4', repair_data[1].split(',')[4]
-    # mechanics['Bob']['A'] = 0.0
-    # print mechanics['Bob']
+    parse_repair_data(repair_data)
     return HttpResponseRedirect('/')
 
 def parse_repair_data(repair_data):
     for i in range(1, len(repair_data)):
-        data = repair_data.split(',')
-        name = data[i][3]
-        repair_type = data[i][4]
+        data = repair_data[i].split(',')
+        name = data[3]
+        repair_type = data[4]
         time_spent = parse_time(data[1], data[2])
+        if name not in mechanics.keys():
+            mechanics[name] = {
+                'A': [],
+                'B': [],
+                'C': [],
+                'D': [],
+                'E': [],
+                'F': []
+            }
+            mechanics[name][repair_type] = [time_spent]
+        else:
+            mechanics[name][repair_type].append(time_spent)
+    print mechanics
 
 def parse_time(dropoff, pickup):
-        date_format = "%m/%d/%Y"
-        a = datetime.strptime(dropoff, date_format)
-        b = datetime.strptime(pickup, date_format)
-        delta = b - a
-        return delta.days
+    if dropoff == '' or dropoff == 'Dropoff' or pickup == '' or pickup == 'Pickup':
+        return None
+    date_format = "%m/%d/%Y"
+    a = datetime.strptime(dropoff, date_format)
+    b = datetime.strptime(pickup, date_format)
+    delta = b - a
+    return delta.days
