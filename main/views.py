@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import csv
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from .models import Service
@@ -8,7 +8,7 @@ from .forms import ServiceForm
 
 # Create your views here.
 def index(request):
-    # print 'request', request.GET
+    print 'request', request.GET
     services = Service.objects.all()
     form = ServiceForm()
     return render(request, 'index.html',
@@ -24,14 +24,13 @@ def post_service(request):
         service.save()
     return HttpResponseRedirect('/')
 
-# def import_csv(request):
-#     print 'import beginning'
-#     if(request.POST.post('import')):
-#         print "IMPORT WORKS"
-#         print request
-#
-#     print request
-#
+def get_import(request):
+    print 'get_import', request
+    spamReader = csv.reader(open('repair-data.csv'), delimiter=b' ', quotechar=b'|')
+    for row in spamReader:
+        print(', '.join(row))
+    return HttpResponseRedirect('/')
+
 # def export_csv(request):
 #     print 'export beginning'
 #     if(request.POST.post('export')):

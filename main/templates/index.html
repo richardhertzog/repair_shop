@@ -5,15 +5,14 @@
   </head>
   <body>
     <h1>Repair Shop</h1>
-    <!-- <form method="get">{% csrf_token %}
-      <input type="submit" class="btn" value="import_csv" name="import" />
-      <input type="submit" class="btn" value="export_csv" name="export" />
-    </form> -->
+    <form action='import_csv' method="get">
+      <input type="submit" value="Import CSV"/>
+    </form>
     {% for service in services %}
-    <p>{{ service.dropoff }}</p>
-    <p>{{ service.pickup }}</p>
-    <p>{{ service.mechanic }}</p>
-    <p>{{ service.repair_type }}</p>
+      <p>{{ service.dropoff }}</p>
+      <p>{{ service.pickup }}</p>
+      <p>{{ service.mechanic }}</p>
+      <p>{{ service.repair_type }}</p>
     {% endfor %}
     <form action='post_url/' method="post">
       {% csrf_token %}
