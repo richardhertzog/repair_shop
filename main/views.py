@@ -26,16 +26,7 @@ def post_service(request):
         service.save()
     return HttpResponseRedirect('/')
 
-national_averages = {
-    'A': 1.0,
-    'B': 1.0,
-    'C': 3.0,
-    'D': 2.0,
-    'E': 3.0,
-    'F': 2.5
-}
 
-repair_data = []
 def get_import(request):
     with open('repair-data.csv') as csvfile:
       reader = csv.reader(csvfile)
@@ -47,8 +38,9 @@ def get_import(request):
           continue
         print "processing row", row
         parse_repair_data(row)
-    for timings in mechanics.values():
-      get_average_repair_time(timings)
+    for name, timings in mechanics.iteritems():
+      averages = get_average_repair_time(timings)
+      report(name, averages)
 
     return HttpResponseRedirect('/')
 
@@ -72,10 +64,33 @@ def parse_time(dropoff, pickup):
       return None
 
 def get_average_repair_time(timings):
+    retval = dict()
     for repair, times in timings.iteritems():
       filtered = [item
         for item
         in times
         if item is not None and int(item) > 0]
-      average = sum(filtered) / len(filtered) if filtered else 0
-      print repair, average
+      average = float(sum(filtered)) / len(filtered) if filtered else 0.0
+      retval[repair] = average
+    return retval
+
+NATIONAL_AVERAGES = {
+  'A': 1.0,
+  'B': 1.0,
+  'C': 3.0,
+  'D': 2.0,
+  'E': 3.0,
+  'F': 2.5
+}
+def report(name, averages):
+  for repair, time in averages.iteritems():
+    if not repair in NATIONAL_AVERAGES:
+      continue
+
+    expected = NATIONAL_AVERAGES[repair]
+    if time < expected:
+      print name, "was faster at", repair
+    elif time > expected:
+      print name, "was slower at", repair
+    else:
+      print name, "finished", repair, "on time"
