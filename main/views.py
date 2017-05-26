@@ -9,7 +9,6 @@ from django.shortcuts import render
 from .models import Service
 from .forms import ServiceForm
 
-# Create your views here.
 def index(request):
     print 'request', request
     services = Service.objects.all()
@@ -38,38 +37,45 @@ national_averages = {
 
 repair_data = []
 def get_import(request):
-    reader = csv.reader(open('repair-data.csv'), delimiter=b' ', quotechar=b'|')
-    for row in reader:
-        repair_data.append(', '.join(row))
-    parse_repair_data(repair_data)
+    with open('repair-data.csv') as csvfile:
+      reader = csv.reader(csvfile)
+      header = True
+      for row in reader:
+        if header:
+          print "skipping header", row
+          header = False
+          continue
+        print "processing row", row
+        parse_repair_data(row)
+    for timings in mechanics.values():
+      get_average_repair_time(timings)
+
     return HttpResponseRedirect('/')
 
 mechanics = defaultdict(lambda: defaultdict(list))
 def parse_repair_data(repair_data):
-    for i in range(1, len(repair_data)):
-        data = repair_data[i].split(',')
-        name = data[3]
-        repair_type = data[4]
-        time_spent = parse_time(data[1], data[2])
-        mechanics[name][repair_type].append(time_spent)
-    for mechanic in mechanics:
-        get_average_repair_time(mechanic, mechanics[mechanic])
+    name = repair_data[3]
+    repair_type = repair_data[4]
+    print repair_data[1], repair_data[2]
+    time_spent = parse_time(repair_data[1], repair_data[2])
+    mechanics[name][repair_type].append(time_spent)
+    print "parsed", repair_data, "into: ", name, repair_type, time_spent
 
 def parse_time(dropoff, pickup):
-    if (not dropoff or dropoff == 'Dropoff' or
-        not pickup or pickup == 'Pickup'):
-        return None
-    date_format = "%m/%d/%Y"
-    start = datetime.strptime(dropoff, date_format)
-    end = datetime.strptime(pickup, date_format)
-    delta = end - start
-    return delta.days
+    if dropoff and pickup:
+      date_format = "%m/%d/%Y"
+      start = datetime.strptime(dropoff, date_format)
+      end = datetime.strptime(pickup, date_format)
+      delta = end - start
+      return delta.days
+    else:
+      return None
 
-def get_average_repair_time(mechanic, repairs):
-    for repair in repairs:
-        filtered = [item
-          for item
-          in repairs.get(repair, [])
-          if item is not None and int(item) > 0]
-        average = sum(filtered) / len(filtered) if filtered else 0
-        print repair, average
+def get_average_repair_time(timings):
+    for repair, times in timings.iteritems():
+      filtered = [item
+        for item
+        in times
+        if item is not None and int(item) > 0]
+      average = sum(filtered) / len(filtered) if filtered else 0
+      print repair, average
